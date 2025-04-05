@@ -1,7 +1,19 @@
-#!/bin/sh
+#!/bin/bash
+
+PUSH=0
+NO_OP=0
+
+while [[ "$#" -gt 0 ]]; do
+	case $1 in
+		-p) PUSH=1; shift 1;;
+		-n) NO_OP=1; shift 1;;
+		*) echo "unknown flag">&2; exit 1;;
+	esac
+done
 
 # type dropdown
 TYPE=$(cat config/types.txt | gum choose --header "commit type")
+[ -z $TYPE ] && echo "commit type is mandatory! exiting, no changes made." && exit 1
 
 # scope input, wrap in parentheses if provided
 SCOPE=$((echo "[ ]"; cat config/scopes.txt) | gum choose --header "optional scope")
@@ -12,9 +24,24 @@ test -n "$SCOPE" && SCOPE="($SCOPE)"
 # collect description and body
 DESC=$(gum input \
 		--placeholder "mandatory description - one line summary of changes" \
-		--value "$TYPE$SCOPE: ") 
+		--value "$TYPE$SCOPE: ")
+DESC_ADDNS=$(echo "$DESC" | cut -d: -f2- | xargs)
+[ -z $DESC_ADDNS ] && echo "description is mandatory! exiting, no changes made." && exit 1
+
 BODY=$(gum write --placeholder "optional body - multiline space for elaboration")
 
 # assemble & check w user before committing!
 printf "%b" "$DESC\n\n$BODY" | gum style --border double --margin "1 2" --padding "1 2" --foreground 212
-gum confirm "commit changes?" && git commit -m "$DESC" -m "$BODY"
+echo ""
+if gum confirm "commit changes?"; then 
+	if [ -n "$NO_OP" ]; then
+		exit 0
+	fi
+	git commit -m "$DESC" -m "$BODY"
+	if [ -n "$PUSH" ]; then
+		gum spin --spinner line --title "pushing to remote..." -- git push
+		echo "changes pushed!"
+	fi
+fi
+
+
