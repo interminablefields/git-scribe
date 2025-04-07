@@ -68,7 +68,7 @@ BODY=$(gum write --placeholder "optional body - multiline space for elaboration"
 printf "%b" "$DESC\n\n$BODY" | gum style --border rounded --margin "1 2" --padding "1 2" --foreground 212 
 
 export GUM_CONFIRM_PROMPT_FOREGROUND=212
-if gum confirm "commit changes?"; then 
+if gum confirm "changes approved?"; then 
 	if [[ $NO_OP == 1 ]]; then
 		git commit --dry-run -m "$DESC" -m "$BODY"
 	else
