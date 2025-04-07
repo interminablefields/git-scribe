@@ -25,6 +25,7 @@ if git diff --cached --quiet; then
 		touch .no_op.txt
 		git add .no_op.txt
 		NO_OP_TXT_FLAG=1
+		echo "no files staged. creating dummy to test no-op" | gum style --foreground 212
 	else
 		echo "no files staged!" | gum style --foreground 1
 		echo "exiting, no changes made." && exit 1
@@ -64,8 +65,9 @@ fi
 BODY=$(gum write --placeholder "optional body - multiline space for elaboration")
 
 # assemble & check w user before committing
-printf "%b" "$DESC\n\n$BODY" | gum style --border rounded --margin "1 2" --padding "1 2" --foreground 212
+printf "%b" "$DESC\n\n$BODY" | gum style --border rounded --margin "1 2" --padding "1 2" --foreground 212 
 
+export GUM_CONFIRM_PROMPT_FOREGROUND=212
 if gum confirm "commit changes?"; then 
 	if [[ $NO_OP == 1 ]]; then
 		git commit --dry-run -m "$DESC" -m "$BODY"
@@ -73,7 +75,7 @@ if gum confirm "commit changes?"; then
 		git commit -m "$DESC" -m "$BODY"
 	fi
 	
-	gum style --foreground 46 "changes commited!"
+	gum style --foreground 212 "changes commited!"
 	
 	if [[ $PUSH == 1 ]]; then
 		# gum spin --spinner line --title "preparing to push" -- sleep 1
@@ -84,7 +86,7 @@ if gum confirm "commit changes?"; then
 			# git push
 			gum spin --spinner line --show-output --title "pushing to remote..." -- git push
 		fi
-		gum style --foreground 46 "changes pushed!"
+		gum style --foreground 212 "changes pushed!"
 	fi
 fi
 
