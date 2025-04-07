@@ -2,6 +2,11 @@
 
 # quit on any non-0 exit code
 set -e
+set -x
+if git diff --cached --quiet; then
+	echo "no files staged!" | gum style --foreground 1
+	echo "exiting, no changes made." && exit 1
+fi
 
 PUSH=0
 NO_OP=0
@@ -17,7 +22,10 @@ done
 
 # type dropdown
 TYPE=$(cat config/types.txt | gum choose --header "commit type")
-[ -z $TYPE ] && echo "commit type is mandatory! exiting, no changes made." && exit 1
+if [ -z "$TYPE" ]; then 
+	echo "commit type is mandatory!" | gum style --foreground 1
+	echo "exiting, no changes made." && exit 1
+fi
 
 # scope input, wrap in parentheses if provided
 SCOPE=$((echo "[ ]"; cat config/scopes.txt) | gum choose --header "optional scope")
@@ -29,25 +37,40 @@ test -n "$SCOPE" && SCOPE="($SCOPE)"
 DESC=$(gum input \
 		--placeholder "mandatory description - one line summary of changes" \
 		--value "$TYPE$SCOPE: ")
-DESC_ADDNS=$(echo "$DESC" | cut -d: -f2- | xargs)
-[ -z "$DESC_ADDNS" ] && echo "description is mandatory! exiting, no changes made." && exit 1
+if [[ "$DESC" != *:* ]]; then
+	echo "missing mandatory colon in description" | gum style --foreground 1
+	echo "exiting, no changes made." && exit 1
+fi
+
+# zsh slicing
+DESC_ADDNS=${DESC#*:}
+DESC_ADDNS=$(echo "$DESC_ADDNS" | xargs)
+
+if [ -z "$DESC_ADDNS" ]; then 
+	echo "here2"
+	echo "description is mandatory!" | gum style --foreground 1
+	echo "exiting, no changes made." && exit 1
+fi
 
 BODY=$(gum write --placeholder "optional body - multiline space for elaboration")
 
 # assemble & check w user before committing!
 printf "%b" "$DESC\n\n$BODY" | gum style --border double --margin "1 2" --padding "1 2" --foreground 212
-echo ""
+
 if gum confirm "commit changes?"; then 
-	if [ -n "$NO_OP" ]; then
-		exit 0
+	if [[ $NO_OP == 1 ]]; then
+		git commit --dry-run -m "$DESC" -m "$BODY"
+	else
+		git commit -m "$DESC" -m "$BODY"
 	fi
-	echo "$PUSH"
-	git commit -m "$DESC" -m "$BODY"
-	if [ -n "$PUSH" ]; then
-		echo "here"
-		gum spin --spinner line --title "preparing to push" -- sleep 2
-		git push
+	
+	
+	if [[ $PUSH == 1 ]]; then
+		gum spin --spinner line --title "preparing to push" -- sleep 1
+		if [[ $NO_OP == 1 ]]; then
+			git push --dry-run
+		else
+			git push
+		fi
 	fi
 fi
-
-
