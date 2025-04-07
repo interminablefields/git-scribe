@@ -4,14 +4,9 @@
 set -e
 # debug flag : set -x
 
-# check if nothing added to commit
-if git diff --cached --quiet; then
-	echo "no files staged!" | gum style --foreground 1
-	echo "exiting, no changes made." && exit 1
-fi
-
 PUSH=0
 NO_OP=0
+NO_OP_TXT_FLAG=0
 
 # set PUSH and NO_OP based on cmdline flags
 while [ "$#" -gt 0 ]; do
@@ -22,6 +17,19 @@ while [ "$#" -gt 0 ]; do
 	esac
 	shift
 done
+
+# check if nothing added to commit EXCEPT for no op version
+
+if git diff --cached --quiet; then
+	if [[ $NO_OP == 1 ]]; then
+		touch .no_op.txt
+		git add .no_op.txt
+		NO_OP_TXT_FLAG=1
+	else
+		echo "no files staged!" | gum style --foreground 1
+		echo "exiting, no changes made." && exit 1
+	fi
+fi
 
 # type dropdown
 TYPE=$(cat config/types.txt | gum choose --header "commit type")
@@ -56,7 +64,7 @@ fi
 BODY=$(gum write --placeholder "optional body - multiline space for elaboration")
 
 # assemble & check w user before committing
-printf "%b" "$DESC\n\n$BODY" | gum style --border double --margin "1 2" --padding "1 2" --foreground 212
+printf "%b" "$DESC\n\n$BODY" | gum style --border rounded --margin "1 2" --padding "1 2" --foreground 212
 
 if gum confirm "commit changes?"; then 
 	if [[ $NO_OP == 1 ]]; then
@@ -65,13 +73,23 @@ if gum confirm "commit changes?"; then
 		git commit -m "$DESC" -m "$BODY"
 	fi
 	
+	gum style --foreground 46 "changes commited!"
 	
 	if [[ $PUSH == 1 ]]; then
-		gum spin --spinner line --title "preparing to push" -- sleep 1
+		# gum spin --spinner line --title "preparing to push" -- sleep 1
 		if [[ $NO_OP == 1 ]]; then
-			git push --dry-run
+			gum spin --spinner line --show-output --title "pushing to remote..." -- git push --dry-run
+			# git push --dry-run
 		else
-			git push
+			# git push
+			gum spin --spinner line --show-output --title "pushing to remote..." -- git push
 		fi
+		gum style --foreground 46 "changes pushed!"
 	fi
 fi
+
+if [[ $NO_OP_TXT_FLAG == 1 ]]; then
+	git restore --staged .no_op.txt
+	rm .no_op.txt
+fi
+
