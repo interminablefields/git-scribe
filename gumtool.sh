@@ -1,14 +1,18 @@
 #!/bin/bash
 
+# quit on any non-0 exit code
+set -e
+
 PUSH=0
 NO_OP=0
 
-while [[ "$#" -gt 0 ]]; do
+while [ "$#" -gt 0 ]; do
 	case $1 in
-		-p) PUSH=1; shift 1;;
-		-n) NO_OP=1; shift 1;;
+		-p) PUSH=1 ;;
+		-n) NO_OP=1 ;;
 		*) echo "unknown flag">&2; exit 1;;
 	esac
+	shift
 done
 
 # type dropdown
@@ -26,7 +30,7 @@ DESC=$(gum input \
 		--placeholder "mandatory description - one line summary of changes" \
 		--value "$TYPE$SCOPE: ")
 DESC_ADDNS=$(echo "$DESC" | cut -d: -f2- | xargs)
-[ -z $DESC_ADDNS ] && echo "description is mandatory! exiting, no changes made." && exit 1
+[ -z "$DESC_ADDNS" ] && echo "description is mandatory! exiting, no changes made." && exit 1
 
 BODY=$(gum write --placeholder "optional body - multiline space for elaboration")
 
@@ -37,10 +41,12 @@ if gum confirm "commit changes?"; then
 	if [ -n "$NO_OP" ]; then
 		exit 0
 	fi
+	echo "$PUSH"
 	git commit -m "$DESC" -m "$BODY"
 	if [ -n "$PUSH" ]; then
-		gum spin --spinner line --title "pushing to remote..." -- git push
-		echo "changes pushed!"
+		echo "here"
+		gum spin --spinner line --title "preparing to push" -- sleep 2
+		git push
 	fi
 fi
 
