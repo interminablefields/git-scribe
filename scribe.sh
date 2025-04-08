@@ -23,6 +23,7 @@ display_help() {
     echo "  -p        push to remote after commit"
     echo "  -n        no-op mode; no actual commit or push. will stage a dummy file if nothing is staged."
 	echo
+	echo "use in the same manner as git commit-- after files are staged."
 	echo "dropdowns for type and scope, text entry for everything else."
 	echo
 	echo "✮ ⋆ ˚｡𖦹 ⋆｡°✩" | gum style --foreground 212
@@ -80,6 +81,7 @@ if git diff --cached --quiet; then
 		echo ""
 	else
 		echo "fatal: no files staged!" | gum style --foreground 1
+		display_help
 		echo "exiting, no changes made." && exit 1
 	fi
 fi
