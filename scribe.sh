@@ -142,7 +142,7 @@ gum style --bold --foreground 212 "assembled commit message: "
 printf "%b" "$DESC\n\n$BODY" | gum style --border rounded --margin "1 2" --padding "1 2" --foreground 212 
 
 export GUM_CONFIRM_PROMPT_FOREGROUND=212
-if gum confirm "changes approved?"; then 
+if gum confirm "commit approved?"; then 
 	echo "⋆˚☆˖°⋆｡° ✮˖ ࣪ ⊹⋆.˚" | gum style --foreground 212
 	if [[ $NO_OP == 1 ]]; then
 		git commit --dry-run -m "$DESC" -m "$BODY"
