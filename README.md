@@ -10,3 +10,5 @@ intended to be used in place of `git commit` + optional no-op (`-n`) and push (`
 <img height="115" alt="Screen Shot 2025-04-07 at 9 42 07 PM" src="https://github.com/user-attachments/assets/aa1eb1fd-6808-46c3-89b2-6e24d179ed5a" />
 
 built using charmbracelet's [`gum`](https://github.com/charmbracelet/gum). 🌠
+
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
