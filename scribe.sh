@@ -4,6 +4,11 @@
 set -e
 # debug flag : set -x
 
+cleanup() {
+  [ -f .no_op.txt ] && git restore --staged .no_op.txt && rm .no_op.txt
+}
+trap cleanup EXIT
+
 PUSH=0
 NO_OP=0
 NO_OP_TXT_FLAG=0
@@ -25,22 +30,29 @@ if git diff --cached --quiet; then
 		touch .no_op.txt
 		git add .no_op.txt
 		NO_OP_TXT_FLAG=1
-		echo "no files staged. creating dummy to test no-op" | gum style --foreground 212
+		echo "no files staged. creating dummy to test no-op" | gum style --foreground 3
+		echo ""
 	else
 		echo "no files staged!" | gum style --foreground 1
 		echo "exiting, no changes made." && exit 1
 	fi
 fi
 
+STAGED=$(git diff --cached --name-only)
+echo "files staged for commit: " | gum style --foreground 212 --bold
+echo "$STAGED" | awk '{print "★", $0}' | gum format
+
+echo ""
+
 # type dropdown
-TYPE=$(cat config/types.txt | gum choose --header "commit type")
+TYPE=$(cat scribe-config/types.txt | gum choose --header "commit type")
 if [ -z "$TYPE" ]; then 
 	echo "commit type is mandatory!" | gum style --foreground 1
 	echo "exiting, no changes made." && exit 1
 fi
 
 # scope input, wrap in parentheses if provided
-SCOPE=$((echo "[ ]"; cat config/scopes.txt) | gum choose --header "optional scope")
+SCOPE=$((echo "[ ]"; cat scribe-config/scopes.txt) | gum choose --header "optional scope")
 [ "$SCOPE" = "[ ]" ] && SCOPE=""
 test -n "$SCOPE" && SCOPE="($SCOPE)"
 
@@ -90,8 +102,8 @@ if gum confirm "changes approved?"; then
 	fi
 fi
 
-if [[ $NO_OP_TXT_FLAG == 1 ]]; then
-	git restore --staged .no_op.txt
-	rm .no_op.txt
-fi
+# if [[ $NO_OP_TXT_FLAG == 1 ]]; then
+#	git restore --staged .no_op.txt
+#	rm .no_op.txt
+# fi
 
