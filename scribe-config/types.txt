@@ -4,3 +4,5 @@ docs
 style
 refactor
 test
+chore
+build
