@@ -1,5 +1,5 @@
 # git-scribe 🧃
-a CLI commit message builder to improve the experience of writing good commit messages.
+a CLI commit message builder to improve the experience of writing actually useful commit messages.
 
 follows the [conventional commit](https://www.conventionalcommits.org/en/about/) specs. 
 
