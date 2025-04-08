@@ -32,8 +32,7 @@ display_help() {
 
 # script / vars to track config files for dropdown menus
 
-SCRIPT_PATH="${0:A}"
-SCRIPT_DIR="${0:A:h}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOCAL_CONFIG="$PWD/.scribe"
 DEV_CONFIG="$SCRIPT_DIR/scribe-config"
 
