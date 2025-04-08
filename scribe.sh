@@ -81,7 +81,6 @@ if git diff --cached --quiet; then
 		echo ""
 	else
 		echo "fatal: no files staged!" | gum style --foreground 1
-		display_help
 		echo "exiting, no changes made." && exit 1
 	fi
 fi
@@ -139,6 +138,7 @@ fi
 BODY=$(gum write --placeholder "optional body - multiline space for elaboration")
 
 # assemble & check w user before committing
+gum style --bold --foreground 212 "assembled commit message: "
 printf "%b" "$DESC\n\n$BODY" | gum style --border rounded --margin "1 2" --padding "1 2" --foreground 212 
 
 export GUM_CONFIRM_PROMPT_FOREGROUND=212
