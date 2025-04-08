@@ -32,7 +32,9 @@ display_help() {
 
 # script / vars to track config files for dropdown menus
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_PATH="$(readlink -f "$0")" # this one handles the fact that the script might be symlinked!
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 LOCAL_CONFIG="$PWD/.scribe"
 DEV_CONFIG="$SCRIPT_DIR/scribe-config"
 
@@ -156,14 +158,14 @@ if gum confirm "commit approved?"; then
 		echo
 		echo "*ੈ✩‧₊˚༺☆༻*ੈ✩‧₊˚" | gum style --foreground 212
 		if [[ $NO_OP == 1 ]]; then
-			gum spin --spinner line --show-output --title "pushing to remote..." -- git push --dry-run
-			# git push --dry-run
+			if ! gum spin --spinner line --show-output --title "pushing to remote..." -- git push --dry-run; then
+				gum style --foreground 3 "nothing to push. branch already up to date (expected behavior for no-op run)"
+			fi
 		else
-			# git push
 			gum spin --spinner line --show-output --title "pushing to remote..." -- git push
 		fi
 		echo "*ੈ✩‧₊˚༺☆༻*ੈ✩‧₊˚" | gum style --foreground 212
 		echo
-		gum style --foreground 212 "changes pushed! "
+		gum style --foreground 212 "push operation complete. "
 	fi
 fi
